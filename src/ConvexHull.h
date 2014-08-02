@@ -6,7 +6,6 @@
 #include "Vertex.h"
 #include "vect.h"
 #include <map>
-#include "Centroid.h"
 
 class ConvexHull
 {
@@ -14,7 +13,6 @@ class ConvexHull
 	std::vector<DCEL::Vertex> pointList;
 	std::vector<DCEL::Vertex> convexHullPoints;
 	std::vector<DCEL::Region*> Clist;
-	Centroid centroid; 
 
 	static const int NB_POINTS_LIMIT = 2000; 
 	std::map<DCEL::Vertex*, std::vector<DCEL::Region*> > Fconflit; 

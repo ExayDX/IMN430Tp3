@@ -182,6 +182,8 @@ void ConvexHull::createFirstTetraedron(DCEL::Vertex* p1, DCEL::Vertex* p2, DCEL:
 	Clist.push_back(r2);
 	Clist.push_back(r3);
 	Clist.push_back(r4);
+
+	faceIsVisible(&DCEL::Vertex(1, 2, 3), r1);
 }
 
 
@@ -219,7 +221,7 @@ std::vector<DCEL::Vertex*> ConvexHull::sortPointsCCw(DCEL::Vertex* p1, DCEL::Ver
 	//because there's only 3 points
 	for (int i = 0; i < sortedPoints.size() -1; ++i)
 	{
-		if (sortedPoints[i]->x < sortedPoints[i + 1]->x) 
+		if (sortedPoints[i]->x > sortedPoints[i + 1]->x) 
 		{
 			DCEL::Vertex* temp = sortedPoints[i];
 			sortedPoints[i] = sortedPoints[i + 1];
@@ -228,6 +230,8 @@ std::vector<DCEL::Vertex*> ConvexHull::sortPointsCCw(DCEL::Vertex* p1, DCEL::Ver
 	}
 
 	//if the two last points are equal in x
+	//Even if the points' coordinates are float, a problem will only occur if their value are
+	//perfectly equals. 
 	if (sortedPoints[1]->x == sortedPoints[2]->x &&
 		sortedPoints[1]->y < sortedPoints[2]->y)
 	{
@@ -281,10 +285,6 @@ void ConvexHull::computeConvexHull()
 				//STEP 2
 				//Compute the convexHull made by the 4 points( C <- CH(p1,p2,p3,p4))
 				createFirstTetraedron(&*aItt, &*bItt, &*cItt, &*dItt);
-				centroid.update(*aItt);
-				centroid.update(*bItt);
-				centroid.update(*cItt);
-				centroid.update(*dItt);
 
 				pointList.erase(dItt);
 				pointList.erase(cItt);

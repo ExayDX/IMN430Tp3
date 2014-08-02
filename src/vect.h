@@ -50,12 +50,12 @@ public:
     }
     
     vect& normalize(){
-        vect normal(getNormal());
+        vect normal(getNormalizedVec());
         this->swap(normal);
         return *this;
     }
     
-    vect getNormal()const{
+    vect getNormalizedVec()const{
         const unsigned int n = norm();
         return vect(this->x / n, this->y / n, this->z / n);
     }

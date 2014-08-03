@@ -83,7 +83,14 @@ void ConvexHull::initializeConflictsGraph()
 }
 
 
-//Works only if a pt is out of the hull
+//TO DO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+void ConvexHull::fuseRegions(DCEL::Region* r1, DCEL::Region* r2)
+{
+
+}
+
+
+
 bool ConvexHull::faceIsVisible(DCEL::Vertex* pt, DCEL::Region* r)
 {
 	DCEL::Vertex p1 = *(r->getBound()->getOrigin());
@@ -375,31 +382,50 @@ void ConvexHull::computeConvexHull()
 						Clist.push_back(regionF);
 
 						//12. si f est coplanaire avec la face voisine f^t le long de e,
+						
+						vect vf1(*regionF->getBound()->getOrigin(), *regionF->getBound()->getEnd());
+						vect vf2(*regionF->getBound()->getEnd(), *regionF->getBound()->getNext()->getEnd());
+						vect normalf(vf1.cross(vf2));
+
+						DCEL::Region* regionFT = prHorizon[e]->getTwin()->getRegion(); 
+						vect vft1(*regionFT->getBound()->getOrigin(), *regionFT->getBound()->getEnd());
+						vect vft2(*regionFT->getBound()->getEnd(), *regionFT->getBound()->getNext()->getEnd());
+						vect normalft(vft1.cross(vft2));
+						
+						if (normalf == normalft)
+						{
 							//13.combiner f et f^t en une seule face dont la liste des conflits est la meme que pour f^t
-
-						//14. sinon 
-						//15. creer un sommet pour f dans G
-						//16. P(e) <- Pconflit(f1) U Pconflit(f2) ou f1 et f2 sont les 2 faces incidentes a e dans CH(P_r-1)
-						std::vector<DCEL::Vertex*> P;
-
-						//17.
-						for (int i = 0; i < P.size(); ++i)
-						{
-							//18. si f est visible depuis p, ajouter (p,f) dans G
-							if (faceIsVisible(P[i], regionF))
-								Fconflit[P[i]].push_back(regionF); 
+							fuseRegions(regionF, regionFT);
 						}
-
-						//8. retirer les faces dans Fconflit(pr) de C
-						for (int i = Fconflit[&pointList[r]].size() -1; i >= 0; --i)
+						else
 						{
-							delete Fconflit[&pointList[r]][i];
-							Fconflit[&pointList[r]][i] = nullptr;
+							//TO COMPLETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+							//15. creer un sommet pour f dans G
+							//16. P(e) <- Pconflit(f1) U Pconflit(f2) ou f1 et f2 sont les 2 faces incidentes a e dans CH(P_r-1)
+							std::vector<DCEL::Vertex*> P;
+
+							//17.
+							for (int i = 0; i < P.size(); ++i)
+							{
+								//18. si f est visible depuis p, ajouter (p,f) dans G
+								if (faceIsVisible(P[i], regionF))
+									Fconflit[P[i]].push_back(regionF);
+							}
 						}
-						Fconflit[&pointList[r]].clear();
 					}
+					
+					//8. retirer les faces dans Fconflit(pr) de C
+					for (int i = Fconflit[&pointList[r]].size() - 1; i >= 0; --i)
+					{
+						delete Fconflit[&pointList[r]][i];
+						Fconflit[&pointList[r]][i] = nullptr;
+					}
+					Fconflit[&pointList[r]].clear();
 
-					//19. Suprimer le sommet associe à pr de G //Fconflit.erase(&pointList[r]);
+					//19. Suprimer le sommet associe à pr de G
+					Fconflit.erase(&pointList[r]);
+
+					//TO COMPLETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					//20. Suprimer les sommets correspondants aux faces dans Fconflit(pr) de G ainsi que leurs aretes incidentes
 				}
 			}

@@ -65,6 +65,13 @@ public:
         std::swap(y, v.y);
         std::swap(z, v.z);
     }
+
+	bool operator== (const vect& v)
+	{
+		return ((this->x - v.x < std::numeric_limits<float>::epsilon()) && 
+				(this->y - v.y < std::numeric_limits<float>::epsilon()) && 
+				(this->z - v.z < std::numeric_limits<float>::epsilon()));
+	}
 };
 
 #endif

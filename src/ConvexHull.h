@@ -28,6 +28,7 @@ class ConvexHull
 	std::vector<DCEL::Vertex*> sortPointsCCw(DCEL::Vertex* p1, DCEL::Vertex* p2, DCEL::Vertex* p3);
 	std::vector<DCEL::Edge*> findHorizon(DCEL::Vertex* p); 
 	bool isCoplanar(const vect& ab, const vect& ac, const vect& ad);
+	void fuseRegions(DCEL::Region* r1, DCEL::Region* r2); 
 
 
 

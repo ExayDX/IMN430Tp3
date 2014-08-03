@@ -16,6 +16,8 @@ using std::map;
 #include <sstream>
 #include <cctype>
 
+#include <cassert>
+
 
 ConvexHull::ConvexHull()
 {
@@ -182,30 +184,36 @@ void ConvexHull::createFirstTetraedron(DCEL::Vertex* p1, DCEL::Vertex* p2, DCEL:
 	Clist.push_back(r2);
 	Clist.push_back(r3);
 	Clist.push_back(r4);
-
-	faceIsVisible(&DCEL::Vertex(1, 2, 3), r1);
 }
 
 
-//TO FINISH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-DCEL::Region* ConvexHull::createAFace(DCEL::Vertex* p1, DCEL::Vertex* p2, DCEL::Vertex* p3)
+//The edge e must be an horizon edge. 
+//The point p is a point being added to the hull
+//ep2begin is an edge already created by a previous face. When it's the first face of a polygon to be created,
+//it's obvioulsy null. 
+// TO TEST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+DCEL::Region* ConvexHull::createAFace(DCEL::Vertex* p, DCEL::HalfEdge* e, DCEL::HalfEdge* ep2Begin, DCEL::HalfEdge* ep2End)
 {
-	std::vector<DCEL::Vertex*> points;
-	points.push_back(p1);
-	points.push_back(p2);
-	points.push_back(p3);
+	DCEL::Region* regionF = new DCEL::Region(e);
+	e->setRegion(regionF);
 
-	for (int i = 0; i < points.size(); ++i)
-	{
-		if (points[i]->getEdge() == nullptr)
-		{
-			DCEL::HalfEdge* edge = new DCEL::HalfEdge(points[i]);
-			points[i]->edge = edge; 
-		}
-	}
+	DCEL::HalfEdge* eEnd2p = new DCEL::HalfEdge(e);
+	eEnd2p->setRegion(regionF);
 
-	//TO FINISH...
-	return new DCEL::Region();
+	if (ep2End == nullptr)
+		DCEL::HalfEdge* ep2End = new DCEL::HalfEdge(p);
+
+	eEnd2p->setTwin(ep2End); //will be ep2begin of the next face of the polygon
+
+	if (ep2Begin == nullptr)
+		DCEL::HalfEdge* ep2Begin = new DCEL::HalfEdge(p);
+	ep2Begin->setRegion(regionF);
+
+	e->setNext(eEnd2p);
+	eEnd2p->setNext(ep2Begin);
+	ep2Begin->setNext(e);
+
+	return regionF; 
 }
 
 
@@ -252,10 +260,51 @@ std::vector<DCEL::Vertex*> ConvexHull::sortPointsCCw(DCEL::Vertex* p1, DCEL::Ver
 	return sortedPoints; 
 }
 
+//TO TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 std::vector<DCEL::Edge*> ConvexHull::findHorizon(DCEL::Vertex* p)
 {
-	//TO DO....
-	return std::vector<DCEL::Edge*>(); 
+	std::vector<DCEL::Edge*> horizon;
+	for (int i = 0; i < Fconflit[p].size(); ++i)
+	{
+		DCEL::HalfEdge* treatenEdge = Fconflit[p][i]->getBound()->getNext();
+		bool backOnFirstEdge = false; 
+		while (!backOnFirstEdge)
+		{
+			//If the treaten edge's twin points to an invisible face, 
+			//the treaten edge is on the horizon line
+			if (std::find(Fconflit[p].begin(), Fconflit[p].end(), treatenEdge->getTwin()->getRegion()) == Fconflit[p].end())
+				horizon.push_back(treatenEdge); 
+			 
+			//If the treaten edge is the first one of the face,
+			//All the face's edges have been treated 
+			if (treatenEdge == Fconflit[p][i]->getBound())
+				backOnFirstEdge; 
+
+			treatenEdge = treatenEdge->getNext();
+		}
+	}
+
+	//Organize horizon edges
+	std::vector<DCEL::Edge*> organizedHorizon;
+	organizedHorizon.push_back(horizon[0]);
+	while (organizedHorizon.size() != horizon.size())
+	{
+		int initialSize = organizedHorizon.size();
+		for (std::vector<DCEL::Edge*>::iterator it = horizon.begin(); it != horizon.end(); ++it)
+		{
+			if ((*it)->getOrigin() == organizedHorizon.back()->getEnd())
+			{
+				organizedHorizon.push_back(*it);
+				break;
+			}
+		}
+		
+		//if the vector hasn't increased, there's a discontinuity in the horizon line founded 
+		//and everything is going to collapse, causing apocalypse in the algorithm :(
+		assert(organizedHorizon.size() != initialSize); 
+	}
+
+	return organizedHorizon;
 }
 
 void ConvexHull::computeConvexHull()
@@ -305,17 +354,24 @@ void ConvexHull::computeConvexHull()
 			{
 				if (Fconflit[&pointList[r]].size() > 0)
 				{
-					//7. Add pr to C
-					//8. retirer les faces dans Fconflit(pr) de C
-
+					//7. Add pr to C (done by the following steps)
 					//9. Creer une liste ordonnee L formant l'horizon de pr
 					std::vector<DCEL::Edge*> prHorizon = findHorizon(&pointList[r]);
 					
 					//10. Pour chaque arete e de L 
-					for (int i = 0; i < prHorizon.size(); ++i)
+					for (int e = 0; e < prHorizon.size(); ++e)
 					{
 						//11. Relier e a pr en creant une face triangulaire f et l'ajouter a C
-						DCEL::Region* regionF = createAFace(prHorizon[i]->getOrigin(), prHorizon[i]->getEnd(), &pointList[r]);
+						DCEL::Region* regionF = nullptr;
+
+						/// TO TEST !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+						if (e == 0)
+							regionF = createAFace(&pointList[r], prHorizon[e]);
+						else if (e == prHorizon.size()-1)
+							regionF = createAFace(&pointList[r], prHorizon[e], prHorizon[e - 1]->getNext()->getTwin()), prHorizon[0]->getPrev();
+						else
+							regionF = createAFace(&pointList[r], prHorizon[e], prHorizon[e - 1]->getNext()->getTwin());
+
 						Clist.push_back(regionF);
 
 						//12. si f est coplanaire avec la face voisine f^t le long de e,
@@ -334,6 +390,13 @@ void ConvexHull::computeConvexHull()
 								Fconflit[P[i]].push_back(regionF); 
 						}
 
+						//8. retirer les faces dans Fconflit(pr) de C
+						for (int i = Fconflit[&pointList[r]].size() -1; i >= 0; --i)
+						{
+							delete Fconflit[&pointList[r]][i];
+							Fconflit[&pointList[r]][i] = nullptr;
+						}
+						Fconflit[&pointList[r]].clear();
 					}
 
 					//19. Suprimer le sommet associe à pr de G //Fconflit.erase(&pointList[r]);

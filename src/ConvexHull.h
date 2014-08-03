@@ -24,7 +24,7 @@ class ConvexHull
 
 	//Tool-Func
 	bool faceIsVisible(DCEL::Vertex*, DCEL::Region*);
-	DCEL::Region* createAFace(DCEL::Vertex* p1, DCEL::Vertex* p2, DCEL::Vertex* p3);
+	DCEL::Region* createAFace(DCEL::Vertex* p, DCEL::HalfEdge* e, DCEL::HalfEdge* ep2begin = nullptr, DCEL::HalfEdge* ep2end = nullptr);
 	std::vector<DCEL::Vertex*> sortPointsCCw(DCEL::Vertex* p1, DCEL::Vertex* p2, DCEL::Vertex* p3);
 	std::vector<DCEL::Edge*> findHorizon(DCEL::Vertex* p); 
 	bool isCoplanar(const vect& ab, const vect& ac, const vect& ad);

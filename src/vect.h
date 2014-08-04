@@ -67,9 +67,12 @@ public:
     }
 
 	bool operator== (const vect& v)const{
-		return ((this->x - v.x < std::numeric_limits<float>::epsilon()) && 
-				(this->y - v.y < std::numeric_limits<float>::epsilon()) && 
-				(this->z - v.z < std::numeric_limits<float>::epsilon()));
+		return (
+            this == &v ||
+            ((this->x - v.x < std::numeric_limits<float>::epsilon()) &&
+             (this->y - v.y < std::numeric_limits<float>::epsilon()) &&
+             (this->z - v.z < std::numeric_limits<float>::epsilon()))
+        );
 	}
 };
 

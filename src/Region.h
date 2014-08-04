@@ -1,9 +1,8 @@
 //
 //  Region.h
-//  IMN430_tp1
+//  IMN430_tp3
 //
 //  Created by Steven Aubertin on 2014-05-13.
-//  Copyright (c) 2014 Steven Aubertin. All rights reserved.
 //
 
 #ifndef IMN430_tp1_Region_h

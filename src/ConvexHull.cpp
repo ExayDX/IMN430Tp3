@@ -293,7 +293,7 @@ std::vector<DCEL::Edge*> ConvexHull::findHorizon(DCEL::Vertex* p)
 			//If the treaten edge is the first one of the face,
 			//All the face's edges have been treated 
 			if (treatenEdge == Fconflit[p][i]->getBound())
-				backOnFirstEdge; 
+				backOnFirstEdge = true;
 
 			treatenEdge = treatenEdge->getNext();
 		}
@@ -449,6 +449,43 @@ bool ConvexHull::computeConvexHull()
 
 void ConvexHull::display(){
 	//TODO : Using OPENGL and following the created DCEL...
+    glPushMatrix();
+        glLoadIdentity();
+    
+        glColor3f(0.0f, 0.0f, 1.0f);
+        glPointSize(5);
+    
+        glBegin(GL_LINES);
+#ifdef DEBUG
+    int i = 0;
+#endif
+            for(auto rItt = Clist.begin(); rItt != Clist.end(); ++rItt){
+                DCEL::Region* r = (*rItt);
+                
+#ifdef DEBUG
+                cout << "Region " << i++ << endl;
+#endif
+                
+                for(auto eItt = r->begin(); eItt.hasNext(); ++eItt){
+                    DCEL::Edge* edge = (*eItt);
+                    DCEL::Vertex* orign = edge->getOrigin();
+                    if (!edge->getTwin()){//mmmmmm not sure
+                        break;
+                    }
+                    DCEL::Vertex* end = edge->getTwin()->getOrigin();
+                    
+#ifdef DEBUG
+                    cout << "(" << (*orign) << ")" << endl << endl;
+#endif
+                    glVertex2i(orign->x, orign->y);
+                    glVertex2i(end->x, end->y);
+                    /*glVertex3i(orign->x, orign->y, orign->z);
+                    glVertex3i(end->x, end->y, end->z);*/
+                }
+            }
+        glEnd();
+    
+    glPopMatrix();
 }
 
 

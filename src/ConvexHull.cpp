@@ -18,6 +18,14 @@ using std::map;
 
 #include <cassert>
 
+#ifdef __APPLE__
+    #include <GLUT/glut.h>
+#else
+    #include <GL/glut.h>
+    #include <GL/glu.h>
+    #include <GL/gl.h>
+#endif
+
 
 ConvexHull::ConvexHull()
 {
@@ -314,7 +322,7 @@ std::vector<DCEL::Edge*> ConvexHull::findHorizon(DCEL::Vertex* p)
 	return organizedHorizon;
 }
 
-void ConvexHull::computeConvexHull()
+bool ConvexHull::computeConvexHull()
 {
 	if (pointList.size() >= 4)
 	{
@@ -334,7 +342,7 @@ void ConvexHull::computeConvexHull()
 			if (dItt == pointList.end())
 			{
 				cout << "All points are coplanar. The convex hull can be computed with a 2D algorithm. Program is closing..." << endl;
-				return;
+				return false;
 			}
 			else
 			{
@@ -415,7 +423,7 @@ void ConvexHull::computeConvexHull()
 					}
 					
 					//8. retirer les faces dans Fconflit(pr) de C
-					for (int i = Fconflit[&pointList[r]].size() - 1; i >= 0; --i)
+					for (int i = static_cast<int>(Fconflit[&pointList[r]].size() - 1); i >= 0; --i)
 					{
 						delete Fconflit[&pointList[r]][i];
 						Fconflit[&pointList[r]][i] = nullptr;
@@ -431,11 +439,19 @@ void ConvexHull::computeConvexHull()
 			}
 		}
 	}
-	else
+	else{
 		cout << "Not enough points to create a convex hull, program is closing..." << endl;
+        return false;
+    }
+    
+    return true;
 }
 
-void ConvexHull::display()
-{
+void ConvexHull::display(){
 	//TODO : Using OPENGL and following the created DCEL...
 }
+
+
+
+
+

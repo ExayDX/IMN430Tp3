@@ -38,7 +38,7 @@ public :
 	~ConvexHull(); 
 
 	bool loadFile(const char* filename); 
-	void computeConvexHull();
+	bool computeConvexHull();
 	void display(); 
 };
 
